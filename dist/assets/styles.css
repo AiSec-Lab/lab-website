@@ -33,7 +33,7 @@ a {
 }
 
 .container {
-  width: min(92vw, var(--max-width));
+  width: min(94vw, 1100px);
   margin: 0 auto;
 }
 
