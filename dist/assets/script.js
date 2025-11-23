@@ -38,6 +38,7 @@ async function loadJSON(path, fallback = []) {
 
 let cachedData = null;
 let dataLoadError = false;
+let currentPath = ['/'];
 async function loadAllData() {
   if (cachedData) return cachedData;
   const [news, projects, people, gallery, papers] = await Promise.all([
@@ -276,11 +277,13 @@ function initTerminal() {
   const output = document.querySelector('[data-terminal-output]');
   const form = document.querySelector('[data-terminal-form]');
   const input = document.querySelector('[data-terminal-input]');
+  const promptSpan = document.querySelector('.terminal-form .prompt');
   if (!output || !form || !input) return;
 
   let history = [];
   let historyIndex = history.length;
 
+  updatePrompt(promptSpan);
   appendLine(output, 'Type "help" to see available commands.');
   input.focus();
 
@@ -288,10 +291,10 @@ function initTerminal() {
     e.preventDefault();
     const command = input.value.trim();
     if (!command) return;
-    appendLine(output, `$ ${command}`, true);
+    appendLine(output, command, true, getPrompt());
     history.push(command);
     historyIndex = history.length;
-    await handleCommand(command, output);
+    await handleCommand(command, output, promptSpan);
     input.value = '';
   });
 
@@ -308,7 +311,7 @@ function initTerminal() {
   });
 }
 
-async function handleCommand(command, output) {
+async function handleCommand(command, output, promptSpan) {
   const data = await loadAllData();
   const cmd = command.toLowerCase();
   if (dataLoadError) {
@@ -317,52 +320,221 @@ async function handleCommand(command, output) {
   }
   switch (cmd) {
     case 'help':
-      appendLine(output, 'Commands: help, news, projects, people, papers, gallery, clear');
-      break;
-    case 'news':
-      if (!data.news.length) appendLine(output, 'No news items yet.');
-      data.news.slice(0, 5).forEach((item, idx) =>
-        appendLine(output, `${idx + 1}. ${formatDate(item.date)} — ${item.title || ''}`),
+      appendLine(
+        output,
+        'Commands: ls, cd <dir>, cd .., view <item> [--view], help, clear. Root dirs: papers, projects, people, news, gallery.',
       );
       break;
-    case 'projects':
-      if (!data.projects.length) appendLine(output, 'No projects yet.');
-      data.projects.forEach((p, idx) =>
-        appendLine(output, `${idx + 1}. ${p.title || 'Untitled'} — ${p.summary || ''}`),
-      );
+    case 'ls':
+      listCurrent(output, data);
       break;
-    case 'people':
-      if (!data.people.length) appendLine(output, 'No people yet.');
-      data.people.forEach((p, idx) =>
-        appendLine(output, `${idx + 1}. ${p.name || ''} [${p.role || ''}] — ${p.bio || ''}`),
-      );
-      break;
-    case 'papers':
-      if (!data.papers.length) appendLine(output, 'No papers yet.');
-      data.papers.forEach((p, idx) =>
-        appendLine(output, `${idx + 1}. ${p.title || ''} — ${p.authors || ''} (${p.year || ''})`),
-      );
-      break;
-    case 'gallery':
-      if (!data.gallery.length) appendLine(output, 'No gallery items yet.');
-      data.gallery.forEach((g, idx) =>
-        appendLine(output, `${idx + 1}. ${g.title || 'Untitled'} — ${g.caption || ''}`),
-      );
+    case 'cd ..':
+    case 'cd..':
+      changeDir('..', output, promptSpan);
       break;
     case 'clear':
       output.innerHTML = '';
       break;
+    case 'news':
+      changeDir('news', output, promptSpan);
+      listCurrent(output, data);
+      break;
+    case 'projects':
+      changeDir('projects', output, promptSpan);
+      listCurrent(output, data);
+      break;
+    case 'people':
+      changeDir('people', output, promptSpan);
+      listCurrent(output, data);
+      break;
+    case 'papers':
+      changeDir('papers', output, promptSpan);
+      listCurrent(output, data);
+      break;
+    case 'gallery':
+      changeDir('gallery', output, promptSpan);
+      listCurrent(output, data);
+      break;
     default:
+      if (cmd.startsWith('cd ')) {
+        const target = command.slice(3).trim();
+        changeDir(target, output, promptSpan);
+        break;
+      }
+      if (cmd.startsWith('view ') || cmd.endsWith('--view')) {
+        const clean = command.replace('--view', '').trim();
+        const parts = clean.split(/\s+/).filter(Boolean);
+        parts.shift();
+        const target = parts.join(' ');
+        handleView(target, data, output);
+        break;
+      }
       appendLine(output, `Unknown command: ${command}`);
   }
 }
 
-function appendLine(output, text, isCommand = false) {
+function changeDir(target, output, promptSpan) {
+  if (!target || target === '.') return;
+  if (target === '..') {
+    if (currentPath.length > 1) currentPath.pop();
+    updatePrompt(promptSpan);
+    listCurrent(output, cachedData || {});
+    return;
+  }
+  if (target === '/') {
+    currentPath = ['/'];
+    updatePrompt(promptSpan);
+    listCurrent(output, cachedData || {});
+    return;
+  }
+  const dirs = ['news', 'projects', 'people', 'papers', 'gallery'];
+  if (dirs.includes(target.toLowerCase())) {
+    currentPath = ['/', target.toLowerCase()];
+    updatePrompt(promptSpan);
+    listCurrent(output, cachedData || {});
+  } else {
+    appendLine(output, `No such directory: ${target}`);
+  }
+}
+
+function listCurrent(output, data) {
+  const dir = currentPath[currentPath.length - 1];
+  switch (dir) {
+    case '/':
+      appendLine(output, 'news/  projects/  people/  papers/  gallery/');
+      break;
+    case 'news':
+      if (!data.news?.length) appendLine(output, 'No news items yet.');
+      data.news?.forEach((item, idx) =>
+        appendLine(output, `${idx + 1}. ${formatDate(item.date)} — ${item.title || ''}`),
+      );
+      break;
+    case 'projects':
+      if (!data.projects?.length) appendLine(output, 'No projects yet.');
+      data.projects?.forEach((p, idx) =>
+        appendLine(output, `${idx + 1}. ${p.title || 'Untitled'} — ${p.summary || ''}`),
+      );
+      break;
+    case 'people':
+      if (!data.people?.length) appendLine(output, 'No people yet.');
+      data.people?.forEach((p, idx) =>
+        appendLine(output, `${idx + 1}. ${p.name || ''} [${p.role || ''}] — ${p.bio || ''}`),
+      );
+      break;
+    case 'papers':
+      if (!data.papers?.length) appendLine(output, 'No papers yet.');
+      data.papers?.forEach((p, idx) =>
+        appendLine(output, `${idx + 1}. ${p.title || ''} — ${p.authors || ''} (${p.year || ''})`),
+      );
+      break;
+    case 'gallery':
+      if (!data.gallery?.length) appendLine(output, 'No gallery items yet.');
+      data.gallery?.forEach((g, idx) =>
+        appendLine(output, `${idx + 1}. ${g.title || 'Untitled'} — ${g.caption || ''}`),
+      );
+      break;
+    default:
+      appendLine(output, `Unknown path: ${dir}`);
+  }
+}
+
+function handleView(target, data, output) {
+  if (!target) {
+    appendLine(output, 'Specify an item to view.');
+    return;
+  }
+  const dir = currentPath[currentPath.length - 1];
+  const openLink = (href) => {
+    if (!href) {
+      appendLine(output, 'No link available.');
+      return;
+    }
+    window.location.href = href;
+  };
+
+  if (dir === '/') {
+    const pageLinks = {
+      news: 'news.html',
+      projects: 'projects.html',
+      people: 'people.html',
+      papers: 'papers.html',
+      gallery: 'gallery.html',
+    };
+    const key = target.toLowerCase();
+    if (pageLinks[key]) openLink(pageLinks[key]);
+    else appendLine(output, `No such item: ${target}`);
+    return;
+  }
+
+  const index = parseInt(target, 10);
+  const isIndex = !Number.isNaN(index);
+
+  switch (dir) {
+    case 'news': {
+      const item = isIndex
+        ? data.news?.[index - 1]
+        : data.news?.find((n) => (n.title || '').toLowerCase().includes(target.toLowerCase()));
+      if (!item) return appendLine(output, 'Item not found.');
+      openLink(item.link || 'news.html');
+      break;
+    }
+    case 'projects': {
+      const item = isIndex
+        ? data.projects?.[index - 1]
+        : data.projects?.find((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      if (!item) return appendLine(output, 'Item not found.');
+      openLink(item.link || 'projects.html');
+      break;
+    }
+    case 'people': {
+      const item = isIndex
+        ? data.people?.[index - 1]
+        : data.people?.find((p) => (p.name || '').toLowerCase().includes(target.toLowerCase()));
+      if (!item) return appendLine(output, 'Item not found.');
+      openLink(item.link || 'people.html');
+      break;
+    }
+    case 'papers': {
+      const item = isIndex
+        ? data.papers?.[index - 1]
+        : data.papers?.find((p) => (p.title || '').toLowerCase().includes(target.toLowerCase()));
+      if (!item) return appendLine(output, 'Item not found.');
+      openLink(item.url || 'papers.html');
+      break;
+    }
+    case 'gallery': {
+      const item = isIndex
+        ? data.gallery?.[index - 1]
+        : data.gallery?.find((g) => (g.title || '').toLowerCase().includes(target.toLowerCase()));
+      if (!item) return appendLine(output, 'Item not found.');
+      openLink(item.image || 'gallery.html');
+      break;
+    }
+    default:
+      appendLine(output, 'Cannot view item here.');
+  }
+}
+
+function appendLine(output, text, isCommand = false, promptText = '$') {
   const line = document.createElement('div');
   line.className = 'terminal-line';
-  line.innerHTML = isCommand ? `<span class="prompt">$</span>${escapeHTML(text.replace(/^\$/, '').trim())}` : escapeHTML(text);
+  if (isCommand) {
+    line.innerHTML = `<span class="prompt">${escapeHTML(promptText)}</span>${escapeHTML(text)}`;
+  } else {
+    line.innerHTML = escapeHTML(text);
+  }
   output.appendChild(line);
   output.scrollTop = output.scrollHeight;
+}
+
+function updatePrompt(span) {
+  if (!span) return;
+  span.textContent = getPrompt();
+}
+
+function getPrompt() {
+  const suffix = currentPath.length === 1 ? '/' : '/' + currentPath.slice(1).join('/');
+  return `${suffix} $`;
 }
 
 function escapeHTML(str) {
