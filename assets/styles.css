@@ -581,9 +581,9 @@ a {
   background: #0b1220;
   border: 1px solid #1e293b;
   border-radius: 12px;
-  padding: 14px;
+  padding: 18px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  min-height: 220px;
+  min-height: 360px;
   display: flex;
   flex-direction: column;
   gap: 12px;
