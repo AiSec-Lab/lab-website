@@ -63,7 +63,7 @@ a {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: transparent;
   display: grid;
   place-items: center;
   overflow: hidden;
