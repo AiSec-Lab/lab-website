@@ -31,11 +31,13 @@ async function loadJSON(path, fallback = []) {
     return await res.json();
   } catch (err) {
     console.warn(`Could not load ${path}`, err);
+    dataLoadError = true;
     return fallback;
   }
 }
 
 let cachedData = null;
+let dataLoadError = false;
 async function loadAllData() {
   if (cachedData) return cachedData;
   const [news, projects, people, gallery, papers] = await Promise.all([
@@ -280,6 +282,7 @@ function initTerminal() {
   let historyIndex = history.length;
 
   appendLine(output, 'Type "help" to see available commands.');
+  input.focus();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -308,6 +311,10 @@ function initTerminal() {
 async function handleCommand(command, output) {
   const data = await loadAllData();
   const cmd = command.toLowerCase();
+  if (dataLoadError) {
+    appendLine(output, 'Warning: Some data could not be loaded. Serve over http(s) for fetch to work.');
+    dataLoadError = false;
+  }
   switch (cmd) {
     case 'help':
       appendLine(output, 'Commands: help, news, projects, people, papers, gallery, clear');

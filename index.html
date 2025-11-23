@@ -38,50 +38,38 @@
 
     <main>
       <section class="hero">
-        <div class="container hero-grid">
-          <div class="hero-card">
-            <h1>Your Lab Name</h1>
-            <p>
-              Keep this page short and welcoming. Add one or two sentences about your
-              focus areas and how you collaborate with students, partners, and the
-              community.
+        <div class="container">
+          <div class="panel terminal-panel">
+            <div class="pill">Terminal</div>
+            <h2>About & quick lookup</h2>
+            <p class="lead">
+              Short description about the lab goes here. Use the terminal to inspect news, papers,
+              projects, people, and gallery data pulled from the JSON/BibTeX files.
             </p>
-            <div class="stat-row">
-              <span class="stat-chip">1 PI • 1 Co-PI • 1 Student</span>
-              <span class="stat-chip secondary">Separate pages for updates and outputs</span>
+            <div class="terminal-window">
+              <div class="terminal-output" data-terminal-output aria-live="polite"></div>
+              <form class="terminal-form" data-terminal-form>
+                <span class="prompt">$</span>
+                <input
+                  type="text"
+                  name="command"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="Type a command, e.g., news"
+                  data-terminal-input
+                />
+              </form>
             </div>
-          </div>
-          <div class="panel news-panel">
-            <div class="pill">News</div>
-            <h2>Recent updates</h2>
-            <p class="lead">Pulled from <code>data/news.json</code>. Scroll to view.</p>
-            <div class="scroll-list" data-hero-news></div>
           </div>
         </div>
       </section>
 
       <section class="container section">
-        <div class="panel terminal-panel">
-          <div class="pill">Terminal</div>
-          <h2>Quick lookup</h2>
-          <p class="lead">
-            Type commands (help, news, papers, projects, people, gallery, clear). Data is read from
-            the JSON and BibTeX files.
-          </p>
-          <div class="terminal-window">
-            <div class="terminal-output" data-terminal-output aria-live="polite"></div>
-            <form class="terminal-form" data-terminal-form>
-              <span class="prompt">$</span>
-              <input
-                type="text"
-                name="command"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="Type a command, e.g., news"
-                data-terminal-input
-              />
-            </form>
-          </div>
+        <div class="panel news-panel">
+          <div class="pill">News</div>
+          <h2>Recent updates</h2>
+          <p class="lead">Pulled from <code>data/news.json</code>.</p>
+          <div class="grid" data-news-list></div>
         </div>
       </section>
     </main>
