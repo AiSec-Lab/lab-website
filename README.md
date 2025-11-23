@@ -30,6 +30,12 @@ python3 -m http.server 4000
 
 Then open `http://localhost:4000` in your browser.
 
+Or run the helper script (builds then serves `dist/`):
+
+```bash
+./scripts/local-preview.sh
+```
+
 ## Static build (pre-render data into HTML)
 - Run `node build.js` to render pages with data into `dist/` (copies assets, data, papers).
 - The output can be served directly (e.g., GitHub Pages) without needing runtime fetches for the data.
