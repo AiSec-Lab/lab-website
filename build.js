@@ -169,7 +169,8 @@ function renderProjects(projects) {
 
 function renderPeople(people) {
   if (!people || !people.length) return '<p class="muted">Add members to data/people.json to see them here.</p>';
-  return people
+  const ranked = [...people].sort((a, b) => rankRole(a.role) - rankRole(b.role));
+  return ranked
     .map(
       (person) => `
       <div class="card person">
@@ -189,6 +190,14 @@ function renderPeople(people) {
     `,
     )
     .join('');
+}
+
+function rankRole(role = '') {
+  const r = role.toLowerCase();
+  if (r.includes('pi') && !r.includes('co')) return 0;
+  if (r.includes('co') && r.includes('pi')) return 1;
+  if (r.includes('student')) return 2;
+  return 3;
 }
 
 function renderGallery(gallery) {
