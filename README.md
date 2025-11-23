@@ -1,6 +1,6 @@
-# Lab Website Starter
+# AiSec Lab Website
 
-Static, ai-folio-inspired layout for an academic lab. Each section lives on its own page for easier content management:
+Static, ai-folio-inspired layout for AiSec Lab. Each section lives on its own page for easier content management:
 
 - `index.html` — short about + links
 - `news.html` — pulls from `data/news.json`
@@ -42,8 +42,8 @@ Or run the helper script (builds then serves `dist/`):
 
 ## GitHub Actions
 - `.github/workflows/build.yml` runs `node build.js` on push and uploads the `dist` artifact.
-- The same workflow deploys to GitHub Pages; site will publish at `https://aiseclab.github.io/website/`.
+- The same workflow deploys to GitHub Pages; site will publish at `https://sayederfanarefin.github.io/aisec-lab-website/`.
 
 ## Deploying to GitHub Pages
-- The workflow deploys automatically on push to `main`/`master`. Expected URL: `https://aiseclab.github.io/website/`.
+- The workflow deploys automatically on push to `main`/`master`. Expected URL: `https://sayederfanarefin.github.io/aisec-lab-website/`.
 - If disabled, enable Pages (Source: GitHub Actions) in repo settings.
