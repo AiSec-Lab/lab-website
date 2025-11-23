@@ -123,11 +123,9 @@ a {
   padding: 72px 0 40px;
 }
 
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 36px;
-  align-items: center;
+.hero .container {
+  display: flex;
+  justify-content: center;
 }
 
 .hero-card {
@@ -190,12 +188,8 @@ a {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   position: relative;
-}
-
-.section > .panel {
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
 }
 
 .panel h2 {
@@ -222,9 +216,6 @@ a {
 
 .section {
   margin: 28px 0 22px;
-}
-
-.section.container {
   display: flex;
   justify-content: center;
 }
