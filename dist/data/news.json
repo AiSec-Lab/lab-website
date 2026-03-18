@@ -1,38 +1,43 @@
 [
   {
+    "date": "2026-02-08",
+    "title": "Preprint Released",
+    "summary": "Privacy-Preserving Covert Communication Using Encrypted Wearable Gesture Recognition by Tasnia Ashrafi Heya and Sayed Erfan Arefin was submitted to arXiv on February 8, 2026.",
+    "link": "https://arxiv.org/abs/2602.07936",
+    "image": "assets/images/papers/logos/arxiv.svg"
+  },
+  {
+    "date": "2025-08-28",
+    "title": "Paper Presented at IntelliSys 2025",
+    "summary": "Actionable Knowledge Discovery: An Overview by Sayed Erfan Arefin and Tasnia Ashrafi Heya was presented in Session 2: Data Science at IntelliSys 2025 on August 28, 2025.",
+    "link": "https://link.springer.com/chapter/10.1007/978-3-032-07109-5_28",
+    "image": "assets/images/papers/logos/springer.svg"
+  },
+  {
+    "date": "2025-06-04",
+    "title": "Paper Presented at CODASPY 2025",
+    "summary": "Exploiting HDMI and USB Ports for GPU Side-Channel Insights by Sayed Erfan Arefin and Abdul Serwadda was presented at CODASPY 2025 in Pittsburgh on June 4, 2025, during the Systems and Hardware Security session.",
+    "link": "https://doi.org/10.1145/3714393.3726511",
+    "image": "assets/images/papers/logos/acm.svg"
+  },
+  {
+    "date": "2025-05-20",
+    "title": "Paper Presented at FMEC 2025",
+    "summary": "A Deep Reinforcement Learning Approach for Joint Task Offloading, Caching, and User Association in Mobile Edge Computing by Tasnia Ashrafi Heya and Sayed Erfan Arefin was presented in Technical Session 5A at FMEC 2025 on May 20, 2025.",
+    "link": "https://doi.org/10.1109/FMEC65595.2025.11119361",
+    "image": "assets/images/papers/logos/ieee.svg"
+  },
+  {
+    "date": "2025-02-03",
+    "title": "Paper Presented at ICSC 2025",
+    "summary": "Luminous Security: Deploying Smart Bulbs for Usable Multi-Factor Authentication by Hasan Al-Qudah, Ynes Ineza, Sayed Erfan Arefin, and Abdul Serwadda appeared in the ICSC 2025 proceedings and was presented during the conference held February 3-5, 2025, in Laguna Hills, California.",
+    "link": "https://doi.org/10.1109/ICSC64641.2025.00033",
+    "image": "assets/images/papers/logos/ieee.svg"
+  },
+  {
     "date": "2024-09-10",
     "title": "<init>",
     "summary": "Start of the lab in JHH 150.",
-    "link": "",
-    "image": "assets/images/news/placeholder.svg"
-  },
-  {
-    "date": "2024-08-20",
-    "title": "Paper Published!",
-    "summary": "Numbered BibTeX files now render automatically on the papers page.",
-    "link": "",
-    "image": "assets/images/news/placeholder.svg"
-  },
-  {
-    "date": "2024-07-15",
-    "title": "Paper Published!",
-    "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
-    "link": "",
-    "image": "assets/images/news/placeholder.svg"
-  }
-  ,
-  {
-    "date": "2024-07-15",
-    "title": "Paper Published!",
-    "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
-    "link": "",
-    "image": "assets/images/news/placeholder.svg"
-  }
-  ,
-  {
-    "date": "2024-07-15",
-    "title": "Paper Published!",
-    "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
     "link": "",
     "image": "assets/images/news/placeholder.svg"
   }
