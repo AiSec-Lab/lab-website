@@ -5,6 +5,7 @@
     "bio": "Assistant Professor in Computer Science at the University of Dayton. Works on cybersecurity, side-channel attacks, and generative AI.",
     "focus": ["Cybersecurity", "Side-channel attacks", "Generative AI", "IoT"],
     "link": "https://udayton.edu/directory/artssciences/computerscience/arefin-sayed-erfan.php",
+    "cv": "cv/sayed-erfan-arefin.pdf",
     "googleScholar": "https://scholar.google.com/citations?user=ZAibq9UAAAAJ",
     "github": "https://github.com/sayederfanarefin",
     "linkedin": "https://www.linkedin.com/in/sayederfanarefin",
@@ -28,7 +29,7 @@
     "image": "https://udayton.edu/directory/artssciences/computerscience/images/ashrafi-heya-tasnia-2024.jpg"
   },
   {
-    "name": "Tarun",
+    "name": "Tarun Aditya Kusupati",
     "role": "Student",
     "bio": "Working on experiments and writing up results.",
     "focus": ["Experiments", "Writing"],

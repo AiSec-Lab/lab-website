@@ -19,6 +19,9 @@ async function main() {
   await fs.cp(path.join(root, 'assets'), path.join(dist, 'assets'), { recursive: true });
   await fs.cp(path.join(root, 'data'), path.join(dist, 'data'), { recursive: true });
   await fs.cp(path.join(root, 'papers'), path.join(dist, 'papers'), { recursive: true });
+  await fs.cp(path.join(root, 'papers-pdf'), path.join(dist, 'papers-pdf'), { recursive: true });
+  await fs.cp(path.join(root, 'papers-poster'), path.join(dist, 'papers-poster'), { recursive: true });
+  await fs.cp(path.join(root, 'cv'), path.join(dist, 'cv'), { recursive: true });
 
   console.log('Built static pages to dist/');
 }
@@ -424,7 +427,7 @@ function renderPapers(papers) {
     .map(
       (paper, idx) => `
       <a class="detail-card-link" href="${getDetailLink('publications', idx + 1)}">
-      <div class="paper detail-card${paper.image ? ' with-thumb' : ''}">
+      <div class="paper publication-row${paper.image ? ' with-thumb' : ''}">
         ${paper.image ? `<div class="paper-thumb" style="background-image:url('${paper.image}')"></div>` : ''}
         <div>
           <div class="title">${paper.title || 'Untitled'}</div>

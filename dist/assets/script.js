@@ -52,10 +52,85 @@ let cachedData = null;
 let dataLoadError = false;
 let currentPath = ['/'];
 const rootDirs = ['news', 'projects', 'people', 'publications'];
+const terminalCommands = ['help', 'man', 'ls', 'cd', 'view', 'cat', 'clear', 'news', 'projects', 'people', 'publications', 'papers'];
 const defaultLabIntro = [
   'The primary focus of the lab is on the intersection of AI and security, exploring how artificial intelligence can both enhance and threaten cybersecurity.',
   'The lab intends to develop tools to enhance security and privacy measures using AI, while also investigating potential vulnerabilities introduced by AI systems.',
 ];
+const manualPages = {
+  help: {
+    name: 'help - show quick command summary',
+    synopsis: ['help'],
+    description: [
+      'Prints available commands and root directories.',
+      'Also includes shortcuts for history navigation and tab autocomplete.',
+    ],
+    examples: ['help'],
+  },
+  man: {
+    name: 'man - display manual pages',
+    synopsis: ['man <command>', 'man'],
+    description: ['Shows usage details for a terminal command.', 'Without arguments, lists available manual pages.'],
+    examples: ['man view', 'man cd'],
+  },
+  ls: {
+    name: 'ls - list items in the current directory',
+    synopsis: ['ls'],
+    description: ['Lists available entries in the active terminal directory.'],
+    examples: ['ls'],
+  },
+  cd: {
+    name: 'cd - change terminal directory',
+    synopsis: ['cd <dir>', 'cd ..', 'cd /'],
+    description: [
+      'Changes the active terminal directory.',
+      'Valid root directories: news, projects, people, publications.',
+    ],
+    examples: ['cd people/', 'cd publications/', 'cd ..'],
+  },
+  view: {
+    name: 'view - print item details from the current directory',
+    synopsis: ['view <index|name>', 'view <index|name> --link'],
+    description: ['Prints the selected item in terminal format.', 'With --link, opens the corresponding detail page after printing.'],
+    examples: ['view 1', 'view Exploiting HDMI', 'view 2 --link'],
+  },
+  cat: {
+    name: 'cat - alias of view',
+    synopsis: ['cat <index|name>', 'cat <index|name> --link'],
+    description: ['Same behavior as view.'],
+    examples: ['cat 1', 'cat 1 --link'],
+  },
+  clear: {
+    name: 'clear - clear terminal output',
+    synopsis: ['clear'],
+    description: ['Clears all output lines in the terminal window.'],
+    examples: ['clear'],
+  },
+  news: {
+    name: 'news - jump to /news and list entries',
+    synopsis: ['news'],
+    description: ['Shortcut for changing directory to /news and running ls.'],
+    examples: ['news'],
+  },
+  projects: {
+    name: 'projects - jump to /projects and list entries',
+    synopsis: ['projects'],
+    description: ['Shortcut for changing directory to /projects and running ls.'],
+    examples: ['projects'],
+  },
+  people: {
+    name: 'people - jump to /people and list entries',
+    synopsis: ['people'],
+    description: ['Shortcut for changing directory to /people and running ls.'],
+    examples: ['people'],
+  },
+  publications: {
+    name: 'publications - jump to /publications and list entries',
+    synopsis: ['publications', 'papers'],
+    description: ['Shortcut for changing directory to /publications and running ls.', 'papers is an alias of publications.'],
+    examples: ['publications', 'papers'],
+  },
+};
 async function loadAllData() {
   if (cachedData) return cachedData;
   const [news, projects, people, papers] = await Promise.all([
@@ -240,7 +315,7 @@ async function renderPapers() {
     .map(
       (paper, idx) => `
       <a class="detail-card-link" href="${getDetailLink('publications', idx + 1)}">
-      <div class="paper detail-card${paper.image ? ' with-thumb' : ''}">
+      <div class="paper publication-row${paper.image ? ' with-thumb' : ''}">
         ${paper.image ? `<div class="paper-thumb" style="background-image:url('${paper.image}')"></div>` : ''}
         <div>
           <div class="title">${paper.title || 'Untitled'}</div>
@@ -283,11 +358,11 @@ async function renderDetailPage() {
     return;
   }
 
-  target.innerHTML = renderDetailItem(type, item);
+  target.innerHTML = await renderDetailItem(type, item, data);
   initDetailSliders(target);
 }
 
-function renderDetailItem(type, item) {
+async function renderDetailItem(type, item, data = {}) {
   const backPage = type === 'publications' || type === 'papers' ? 'papers.html' : `${type}.html`;
   switch (type) {
     case 'news':
@@ -315,14 +390,9 @@ function renderDetailItem(type, item) {
       `;
     case 'people':
       {
-        const profileLinks = renderResourceLinksFromObject(item, [
-          'googleScholar',
-          'github',
-          'linkedin',
-          'researchGate',
-          'scopus',
-          'orcid',
-        ]);
+        const profileBox = await renderPeopleProfilesBox(item);
+        const interestsBox = renderPeopleInterestsBox(item.focus);
+        const publicationsBox = renderPeoplePublicationsBox(item, data.papers || []);
         const personPhoto = item.image
           ? `<div class="person-detail-photo photo" style="background-image:url('${escapeAttr(item.image)}')"></div>`
           : `<div class="person-detail-photo person-detail-photo-fallback">${escapeHTML(getInitials(item.name))}</div>`;
@@ -337,9 +407,9 @@ function renderDetailItem(type, item) {
             </div>
             ${personPhoto}
           </div>
-          ${renderTags(item.focus)}
-          ${profileLinks}
-          ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Profile link</a></div>` : ''}
+          ${interestsBox}
+          ${profileBox}
+          ${publicationsBox}
         </div>
       `;
       }
@@ -353,9 +423,8 @@ function renderDetailItem(type, item) {
           <a class="text-link" href="${backPage}">← Back to Publications</a>
           ${logo}
           <h1>${item.title || 'Untitled publication'}</h1>
-          ${renderResourceLinksFromObject(item.fields || {}, ['poster', 'presentation', 'slides', 'code', 'dataset'])}
           ${renderPublicationFields(item)}
-          ${item.url ? `<div class="cta-row"><a class="text-link" href="${item.url}" target="_blank" rel="noopener">Publication link</a></div>` : ''}
+          ${renderPublicationBottomBubbles(item)}
         </div>
       `;
     }
@@ -364,7 +433,166 @@ function renderDetailItem(type, item) {
   }
 }
 
-function renderPublicationFields(item) {
+function renderPeopleInterestsBox(focus) {
+  const interests = Array.isArray(focus) ? focus.filter(Boolean) : [];
+  if (!interests.length) return '';
+  const chips = interests.map((entry) => `<span class="bubble-chip">${escapeHTML(String(entry))}</span>`).join('');
+  return `
+    <section class="detail-box">
+      <h3 class="detail-box-title">Research Interests</h3>
+      <div class="bubble-links">${chips}</div>
+    </section>
+  `;
+}
+
+async function renderPeopleProfilesBox(item) {
+  const profileEntries = [
+    { key: 'cv', label: 'CV' },
+    { key: 'googleScholar', label: 'Google Scholar' },
+    { key: 'github', label: 'GitHub' },
+    { key: 'linkedin', label: 'LinkedIn' },
+    { key: 'researchGate', label: 'ResearchGate' },
+    { key: 'scopus', label: 'Scopus' },
+    { key: 'orcid', label: 'ORCID' },
+    { key: 'link', label: 'Profile' },
+  ];
+
+  const links = [];
+  for (const { key, label } of profileEntries) {
+    const entries = normalizeResourceEntries(item?.[key]);
+    for (let idx = 0; idx < entries.length; idx += 1) {
+      const entry = entries[idx];
+      const href = normalizeExternalUrl(entry.href);
+      if (!href) continue;
+      if (key === 'cv') {
+        if (/\/$/.test(href)) continue;
+        const exists = await linkExists(href);
+        if (!exists) continue;
+      }
+      const suffix = entries.length > 1 ? ` ${idx + 1}` : '';
+      links.push(
+        `<a class="bubble-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(label + suffix)}</a>`,
+      );
+    }
+  }
+
+  if (!links.length) return '';
+  return `
+    <section class="detail-box">
+      <h3 class="detail-box-title">Profiles</h3>
+      <div class="bubble-links">${links.join('')}</div>
+    </section>
+  `;
+}
+
+const linkExistsCache = new Map();
+
+async function linkExists(href) {
+  if (!href) return false;
+  if (linkExistsCache.has(href)) return linkExistsCache.get(href);
+  const isExternal = /^(https?:)?\/\//i.test(href);
+  if (isExternal) {
+    linkExistsCache.set(href, true);
+    return true;
+  }
+
+  const check = fetch(href, { method: 'HEAD' })
+    .then(async (res) => {
+      if (res.ok) return true;
+      if (res.status === 405 || res.status === 501 || res.status === 403) {
+        try {
+          const fallback = await fetch(href, { method: 'GET' });
+          return fallback.ok;
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    })
+    .catch(async () => {
+      try {
+        const fallback = await fetch(href, { method: 'GET' });
+        return fallback.ok;
+      } catch {
+        return false;
+      }
+    });
+  linkExistsCache.set(href, check);
+  return check;
+}
+
+function renderPeoplePublicationsBox(person, papers) {
+  const matches = findPublicationsByPerson(person, papers);
+  const items = matches
+    .map((paper) => {
+      const title = String(paper.title || 'Untitled publication').trim();
+      const href = getDetailLink('publications', paper._detailId);
+      return `<li><a class="text-link" href="${href}">${escapeHTML(title)}</a></li>`;
+    })
+    .join('');
+
+  return `
+    <section class="detail-box">
+      <h3 class="detail-box-title">Publications</h3>
+      ${items ? `<ul class="people-publication-list">${items}</ul>` : '<span class="muted">No matching publications found.</span>'}
+    </section>
+  `;
+}
+
+function renderPublicationBottomBubbles(item) {
+  const links = [
+    { label: 'Publication', href: normalizeExternalUrl(item?.url) },
+    { label: 'PDF', href: normalizeExternalUrl(item?.fields?.pdf) },
+    { label: 'Poster', href: normalizeExternalUrl(item?.fields?.poster) },
+    { label: 'Slides', href: normalizeExternalUrl(item?.fields?.slides) },
+  ].filter((entry) => entry.href);
+
+  if (!links.length) return '';
+  const bubbles = links
+    .map(
+      (entry) =>
+        `<a class="bubble-link" href="${escapeAttr(entry.href)}" target="_blank" rel="noopener">${escapeHTML(entry.label)}</a>`,
+    )
+    .join('');
+
+  return `
+    <section class="detail-box">
+      <h3 class="detail-box-title">Links</h3>
+      <div class="bubble-links">${bubbles}</div>
+    </section>
+  `;
+}
+
+function findPublicationsByPerson(person, papers) {
+  if (!person || !person.name || !Array.isArray(papers)) return [];
+  const personNameNorm = normalizeAuthorName(person.name);
+  const personTokens = personNameNorm.split(' ').filter((token) => token.length > 1);
+  const firstToken = personTokens[0] || '';
+  const lastToken = personTokens[personTokens.length - 1] || '';
+
+  return papers
+    .map((paper, idx) => ({ ...paper, _detailId: idx + 1 }))
+    .filter((paper) => {
+      const authorText = normalizeAuthorName(paper?.fields?.author || paper?.authors || '');
+      if (!authorText) return false;
+      if (authorText.includes(personNameNorm)) return true;
+      if (personTokens.length === 1) return authorText.includes(personTokens[0]);
+      if (!authorText.includes(lastToken)) return false;
+      if (firstToken && authorText.includes(firstToken)) return true;
+      if (firstToken && authorText.includes(firstToken[0])) return true;
+      return false;
+    });
+}
+
+function normalizeAuthorName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getPublicationDisplayData(item) {
   const fields = item.fields && typeof item.fields === 'object' ? item.fields : {};
   const venue = fields.booktitle || fields.journal || item.venue || '';
   const year = fields.year || item.year || '';
@@ -387,19 +615,21 @@ function renderPublicationFields(item) {
     'year',
     'month',
     'image',
+    'pages',
+    'address',
+    'pdf',
+    'poster',
+    'url',
   ]);
 
   const preferredOrder = [
     'editor',
     'volume',
     'number',
-    'pages',
     'publisher',
-    'address',
     'location',
     'series',
     'doi',
-    'url',
     'abstract',
     'keywords',
     'isbn',
@@ -413,7 +643,29 @@ function renderPublicationFields(item) {
     venue ? { label: 'Journal/Conference', value: venue } : null,
     year ? { label: 'Year', value: year } : null,
   ]
-    .filter(Boolean)
+    .filter(Boolean);
+
+  const remaining = Object.keys(allFields)
+    .filter((key) => !preferredOrder.includes(key) && !hiddenKeys.has(key))
+    .sort();
+  const orderedKeys = [...preferredOrder, ...remaining]
+    .filter((key, idx, arr) => arr.indexOf(key) === idx)
+    .filter((key) => !hiddenKeys.has(key));
+
+  const fieldRows = orderedKeys
+    .filter((key) => allFields[key])
+    .map((key) => ({
+      key,
+      label: prettyBibKey(key),
+      value: String(allFields[key]).trim(),
+    }));
+
+  return { fixedRows, fieldRows };
+}
+
+function renderPublicationFields(item) {
+  const data = getPublicationDisplayData(item);
+  const fixedRowsHtml = data.fixedRows
     .map(
       (row) => `
         <div class="bib-field">
@@ -424,20 +676,12 @@ function renderPublicationFields(item) {
     )
     .join('');
 
-  const remaining = Object.keys(allFields)
-    .filter((key) => !preferredOrder.includes(key) && !hiddenKeys.has(key))
-    .sort();
-  const orderedKeys = [...preferredOrder, ...remaining]
-    .filter((key, idx, arr) => arr.indexOf(key) === idx)
-    .filter((key) => !hiddenKeys.has(key));
-
-  const rows = orderedKeys
-    .filter((key) => allFields[key])
-    .map((key) => {
-      const valueHtml = formatBibValue(key, allFields[key]);
+  const rowsHtml = data.fieldRows
+    .map((row) => {
+      const valueHtml = formatBibValue(row.key, row.value);
       return `
         <div class="bib-field">
-          <div class="bib-key">${escapeHTML(prettyBibKey(key))}</div>
+          <div class="bib-key">${escapeHTML(row.label)}</div>
           <div class="bib-value">${valueHtml}</div>
         </div>
       `;
@@ -446,7 +690,7 @@ function renderPublicationFields(item) {
 
   return `
     <div class="bib-fields">
-      ${fixedRows}${rows || (!fixedRows ? '<div class="bib-empty">No BibTeX fields found.</div>' : '')}
+      ${fixedRowsHtml}${rowsHtml || (!fixedRowsHtml ? '<div class="bib-empty">No BibTeX fields found.</div>' : '')}
     </div>
   `;
 }
@@ -581,7 +825,7 @@ function formatBibValue(key, value) {
     }
   }
 
-  if (['url', 'image', 'poster', 'presentation', 'slides', 'code', 'dataset', 'publications'].includes(key)) {
+  if (['url', 'image', 'pdf', 'poster', 'presentation', 'slides', 'code', 'dataset', 'publications'].includes(key)) {
     const href = normalizeExternalUrl(raw);
     if (href) {
       return `<a class="text-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(raw)}</a>`;
@@ -991,8 +1235,15 @@ async function handleCommand(command, output, promptSpan) {
     case 'help':
       printHelp(output);
       break;
+    case 'man':
+      printMan(output);
+      break;
     case 'ls':
       listCurrent(output, data);
+      break;
+    case 'cd':
+      appendLine(output, 'cd: missing parameter.');
+      appendLine(output, 'Usage: cd <dir>');
       break;
     case 'cd ..':
     case 'cd..':
@@ -1019,19 +1270,27 @@ async function handleCommand(command, output, promptSpan) {
       listCurrent(output, data);
       break;
     default:
+      if (cmd.startsWith('man ')) {
+        const topic = command.slice(4).trim().split(/\s+/)[0] || '';
+        printMan(output, topic);
+        break;
+      }
       if (cmd.startsWith('cd ')) {
         const target = command.slice(3).trim();
         changeDir(target, output, promptSpan);
         break;
       }
-      if (cmd.startsWith('view ') || cmd === 'view' || cmd.endsWith('--link')) {
+      {
         const openAfterPrint = /\s--link\s*$/i.test(command.trim());
         const clean = command.replace(/\s--link\s*$/i, '').trim();
         const parts = clean.split(/\s+/).filter(Boolean);
-        if (parts[0]?.toLowerCase() === 'view') parts.shift();
-        const target = parts.join(' ');
-        handleView(target, data, output, openAfterPrint);
-        break;
+        const verb = (parts[0] || '').toLowerCase();
+        if (verb === 'view' || verb === 'cat') {
+          parts.shift();
+          const target = parts.join(' ');
+          handleView(target, data, output, openAfterPrint);
+          break;
+        }
       }
       if (handleDummyTerminalCommand(command, output)) break;
       appendLine(output, `Not supported: ${command}`);
@@ -1099,12 +1358,55 @@ function handleDummyTerminalCommand(command, output) {
 }
 
 function printHelp(output) {
-  appendLine(output, 'Commands: ls, cd <dir>, cd .., view <item> [--link], help, clear');
+  appendLine(output, 'Commands: man, ls, cd <dir>, cd .., view <item> [--link], cat <item> [--link], help, clear');
   appendLine(output, 'Root dirs:');
   rootDirs.forEach((dir) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(dir)}</span>`));
-  appendLine(output, 'Tip: use "view <item>" to print details, or add "--link" to open the link.');
+  appendLine(output, 'Tip: use "view <item>" or "cat <item>" to print details, or add "--link" to open the link.');
+  appendLine(output, 'Manuals: use "man <command>" to view command documentation.');
   appendLine(output, 'History: use ↑ and ↓ to browse previous commands.');
   appendLine(output, 'Autocomplete: press Tab to complete commands, dirs, and item names.');
+}
+
+function printMan(output, topic = '') {
+  const clean = String(topic || '').trim().toLowerCase().replace(/\/+$/, '');
+  const key = clean === 'papers' ? 'publications' : clean;
+
+  if (!key) {
+    appendLine(output, 'MAN(1)');
+    appendLine(output, '');
+    appendLine(output, 'NAME');
+    appendLine(output, '    man - display manual pages');
+    appendLine(output, '');
+    appendLine(output, 'SYNOPSIS');
+    appendLine(output, '    man <command>');
+    appendLine(output, '');
+    appendLine(output, 'AVAILABLE PAGES');
+    appendLine(output, `    ${Object.keys(manualPages).join(', ')}`);
+    return;
+  }
+
+  const page = manualPages[key];
+  if (!page) {
+    appendLine(output, `No manual entry for ${topic}.`);
+    appendLine(output, 'Try: man help');
+    return;
+  }
+
+  appendLine(output, `${key.toUpperCase()}(1)`);
+  appendLine(output, '');
+  appendLine(output, 'NAME');
+  appendLine(output, `    ${page.name}`);
+  appendLine(output, '');
+  appendLine(output, 'SYNOPSIS');
+  page.synopsis.forEach((line) => appendLine(output, `    ${line}`));
+  appendLine(output, '');
+  appendLine(output, 'DESCRIPTION');
+  page.description.forEach((line) => appendLine(output, `    ${line}`));
+  if (page.examples?.length) {
+    appendLine(output, '');
+    appendLine(output, 'EXAMPLES');
+    page.examples.forEach((line) => appendLine(output, `    ${line}`));
+  }
 }
 
 function changeDir(target, output, promptSpan) {
@@ -1113,20 +1415,17 @@ function changeDir(target, output, promptSpan) {
   if (clean === '..') {
     if (currentPath.length > 1) currentPath.pop();
     updatePrompt(promptSpan);
-    listCurrent(output, cachedData || {});
     return;
   }
   if (clean === '/') {
     currentPath = ['/'];
     updatePrompt(promptSpan);
-    listCurrent(output, cachedData || {});
     return;
   }
   const normalizedTarget = clean.toLowerCase() === 'papers' ? 'publications' : clean.toLowerCase();
   if (rootDirs.includes(normalizedTarget)) {
     currentPath = ['/', normalizedTarget];
     updatePrompt(promptSpan);
-    listCurrent(output, cachedData || {});
   } else {
     appendLine(output, `No such directory: ${target}`);
   }
@@ -1256,13 +1555,7 @@ function handleView(target, data, output, openAfterPrint = false) {
       const item = itemIndex >= 0 ? data.papers?.[itemIndex] : undefined;
       if (!item) return appendLine(output, 'Item not found.');
       const detailLink = getDetailLink('publications', itemIndex + 1);
-      const venueYear = [item.venue, item.year].filter(Boolean).join(' · ');
-      printEntry(output, {
-        title: item.title || 'Untitled publication',
-        body: item.authors || 'No author list available.',
-        meta: venueYear,
-        link: detailLink,
-      });
+      printPublicationEntry(output, item, detailLink);
       if (openAfterPrint) openLink(detailLink);
       break;
     }
@@ -1287,13 +1580,50 @@ function printEntry(output, entry) {
   }
 }
 
+function printPublicationEntry(output, item, detailLink) {
+  const data = getPublicationDisplayData(item);
+  appendLine(output, '________________________________________');
+  appendStyledLine(output, `<span class="terminal-green">${escapeHTML(item.title || 'Untitled publication')}</span>`);
+  appendLine(output, '________________________________________');
+
+  const rows = [...data.fixedRows, ...data.fieldRows];
+  if (!rows.length) {
+    appendLine(output, 'No details available.');
+  } else {
+    rows.forEach((row) => appendLine(output, `${row.label}: ${row.value}`));
+  }
+
+  const links = [
+    { label: 'Publication', href: normalizeExternalUrl(item?.url) },
+    { label: 'PDF', href: normalizeExternalUrl(item?.fields?.pdf) },
+    { label: 'Poster', href: normalizeExternalUrl(item?.fields?.poster) },
+    { label: 'Slides', href: normalizeExternalUrl(item?.fields?.slides) },
+    { label: 'Details', href: detailLink },
+  ].filter((entry) => entry.href);
+
+  if (!links.length) {
+    appendStyledLine(output, '<span class="terminal-orange">Link</span>: <span class="terminal-green">N/A</span>');
+    return;
+  }
+  links.forEach((entry) => appendTerminalLinkRow(output, entry.label, entry.href));
+}
+
+function appendTerminalLinkRow(output, label, href) {
+  appendStyledLine(
+    output,
+    `<span class="terminal-orange">${escapeHTML(label)}</span>: <a class="terminal-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(href)}</a>`,
+  );
+}
+
 function autocompleteCommand(inputValue, data) {
   const trimmed = inputValue.trim();
   if (!trimmed) return inputValue;
   const parts = trimmed.split(/\s+/);
   const currentDir = currentPath[currentPath.length - 1];
   const last = parts[parts.length - 1];
-  const isCd = parts[0] === 'cd';
+  const commandWord = (parts[0] || '').toLowerCase();
+  const isCd = commandWord === 'cd';
+  const isMan = commandWord === 'man';
 
   if (isCd) {
     const target = parts[1] || '';
@@ -1310,9 +1640,17 @@ function autocompleteCommand(inputValue, data) {
     return inputValue;
   }
 
+  if (isMan) {
+    const target = (parts[1] || '').toLowerCase();
+    const topics = Object.keys(manualPages);
+    const match = topics.find((page) => page.startsWith(target));
+    if (!match) return inputValue;
+    parts[1] = match;
+    return parts.slice(0, 2).join(' ');
+  }
+
   if (parts.length === 1) {
-    const commands = ['help', 'ls', 'cd', 'view', 'clear', 'news', 'projects', 'people', 'publications', 'papers'];
-    const match = [...commands, ...rootDirs].find((d) => d.startsWith(last.toLowerCase()));
+    const match = [...terminalCommands, ...rootDirs].find((d) => d.startsWith(last.toLowerCase()));
     return match ? match : inputValue;
   }
 
@@ -1384,6 +1722,9 @@ function delay(ms) {
 function updatePrompt(span) {
   if (!span) return;
   span.textContent = getPrompt();
+  const panel = span.closest('.terminal-panel');
+  const header = panel?.querySelector('[data-terminal-prompt-header]');
+  renderPromptHeader(header);
   const form = span.closest('.terminal-form');
   const input = form?.querySelector('input');
   syncKaliCursor(form, input, span);
@@ -1431,8 +1772,10 @@ function syncKaliCursor(form, input, promptSpan) {
 
 function renderPromptHeader(headerEl) {
   if (!headerEl) return;
+  const dir = currentPath[currentPath.length - 1];
+  const home = dir === '/' ? '~' : `~/${dir}`;
   headerEl.innerHTML =
-    '<span class="terminal-green">┌──(visitor@aiseclab)-</span><span class="terminal-home">[~]</span>';
+    `<span class="terminal-green">┌──(visitor@aiseclab)-</span><span class="terminal-home">[${escapeHTML(home)}]</span>`;
 }
 
 function scrollTerminal(output) {
