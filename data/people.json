@@ -9,8 +9,6 @@
     "googleScholar": "https://scholar.google.com/citations?user=ZAibq9UAAAAJ",
     "github": "https://github.com/sayederfanarefin",
     "linkedin": "https://www.linkedin.com/in/sayederfanarefin",
-    "researchGate": "https://www.researchgate.net/search.Search.html?query=Sayed%20Erfan%20Arefin",
-    "scopus": "https://www.scopus.com/results/authorNamesList.uri?st1=Sayed&st2=Arefin",
     "orcid": "https://orcid.org/0000-0002-4651-6710",
     "image": "https://udayton.edu/directory/artssciences/computerscience/images/arefin-erfan-sayed-2024.jpg"
   },
@@ -23,9 +21,6 @@
     "googleScholar": "https://scholar.google.com/citations?user=e_HrHi8AAAAJ&hl=en",
     "github": "https://github.com/search?q=Tasnia+Ashrafi+Heya&type=users",
     "linkedin": "https://www.linkedin.com/in/tasnia-ashrafi-heya/",
-    "researchGate": "https://www.researchgate.net/search.Search.html?query=Tasnia%20Ashrafi%20Heya",
-    "scopus": "https://www.scopus.com/results/authorNamesList.uri?st1=Tasnia&st2=Heya",
-    "orcid": "https://orcid.org/orcid-search/search?searchQuery=Tasnia%20Ashrafi%20Heya",
     "image": "https://udayton.edu/directory/artssciences/computerscience/images/ashrafi-heya-tasnia-2024.jpg"
   },
   {
@@ -33,7 +28,6 @@
     "role": "Graduate Student",
     "bio": "Graduate student working on LLMs, side-channels, and ransomware detection, with a focus on classification and experimentation.",
     "focus": ["LLMs", "Side-channels", "Ransomware detection", "Classification", "Experimentation"],
-    "link": "https://scholar.google.com/scholar?q=Tarun+computer+science+University+of+Dayton",
     "image": "assets/images/people/placeholder.svg"
   }
 ]
