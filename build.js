@@ -274,10 +274,12 @@ function renderHeroNews(news) {
   return news
     .slice(0, 5)
     .map(
-      (item, idx) => `
+      (item, idx) => {
+        const thumb = getPrimaryImage(item);
+        return `
         <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
-        <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
-          ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
+        <div class="card news-card detail-card${thumb ? ' with-thumb' : ''}">
+          ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
           <div>
             <div class="pill">${formatDate(item.date)}</div>
             <h3>${item.title || 'Untitled update'}</h3>
@@ -286,7 +288,8 @@ function renderHeroNews(news) {
           </div>
         </div>
         </a>
-      `,
+      `;
+      },
     )
     .join('');
 }
@@ -295,10 +298,12 @@ function renderNews(news) {
   if (!news || !news.length) return '<p class="muted">Add items to data/news.json to see them here.</p>';
   return news
     .map(
-      (item, idx) => `
+      (item, idx) => {
+        const thumb = getPrimaryImage(item);
+        return `
       <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
-      <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
-        ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
+      <div class="card news-card detail-card${thumb ? ' with-thumb' : ''}">
+        ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
         <div>
           <div class="pill">${formatDate(item.date)}</div>
           <h3>${item.title || 'Untitled update'}</h3>
@@ -307,7 +312,8 @@ function renderNews(news) {
         </div>
       </div>
       </a>
-    `,
+    `;
+      },
     )
     .join('');
 }
@@ -316,10 +322,12 @@ function renderProjects(projects) {
   if (!projects || !projects.length) return '<p class="muted">Add projects to data/projects.json to see them here.</p>';
   return projects
     .map(
-      (project, idx) => `
+      (project, idx) => {
+        const thumb = getPrimaryImage(project);
+        return `
       <a class="detail-card-link" href="${getDetailLink('projects', idx + 1)}">
-      <div class="card detail-card${project.image ? ' with-thumb' : ''}">
-        ${project.image ? `<div class="thumb" style="background-image:url('${project.image}')"></div>` : ''}
+      <div class="card detail-card${thumb ? ' with-thumb' : ''}">
+        ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
         <div>
           <h3>${project.title || 'Project title'}</h3>
           <p class="muted">${project.summary || ''}</p>
@@ -328,9 +336,23 @@ function renderProjects(projects) {
         </div>
       </div>
       </a>
-    `,
+    `;
+      },
     )
     .join('');
+}
+
+function getImageList(item) {
+  if (!item || typeof item !== 'object') return [];
+  if (Array.isArray(item.images)) {
+    return item.images.map((img) => String(img || '').trim()).filter(Boolean);
+  }
+  const single = String(item.image || '').trim();
+  return single ? [single] : [];
+}
+
+function getPrimaryImage(item) {
+  return getImageList(item)[0] || '';
 }
 
 function renderPeople(people) {

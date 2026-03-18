@@ -1,21 +1,37 @@
 [
   {
     "date": "2024-09-10",
-    "title": "Lab website scaffold ready",
-    "summary": "Baseline multi-page layout with ai-folio styling and data hooks is live.",
+    "title": "<init>",
+    "summary": "Start of the lab in JHH 150.",
     "link": "",
     "image": "assets/images/news/placeholder.svg"
   },
   {
     "date": "2024-08-20",
-    "title": "First paper placeholders added",
+    "title": "Paper Published!",
     "summary": "Numbered BibTeX files now render automatically on the papers page.",
     "link": "",
     "image": "assets/images/news/placeholder.svg"
   },
   {
     "date": "2024-07-15",
-    "title": "Team formed",
+    "title": "Paper Published!",
+    "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
+    "link": "",
+    "image": "assets/images/news/placeholder.svg"
+  }
+  ,
+  {
+    "date": "2024-07-15",
+    "title": "Paper Published!",
+    "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
+    "link": "",
+    "image": "assets/images/news/placeholder.svg"
+  }
+  ,
+  {
+    "date": "2024-07-15",
+    "title": "Paper Published!",
     "summary": "1 PI, 1 Co-PI, and 1 student are set up in data/people.json.",
     "link": "",
     "image": "assets/images/news/placeholder.svg"

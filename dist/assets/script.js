@@ -79,10 +79,12 @@ async function renderHeroNews() {
   target.innerHTML = news
     .slice(0, 5)
     .map(
-      (item, idx) => `
+      (item, idx) => {
+        const thumb = getPrimaryImage(item);
+        return `
         <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
-        <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
-          ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
+        <div class="card news-card detail-card${thumb ? ' with-thumb' : ''}">
+          ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
           <div>
             <div class="pill">${formatDate(item.date)}</div>
             <h3>${item.title || 'Untitled update'}</h3>
@@ -91,7 +93,8 @@ async function renderHeroNews() {
           </div>
         </div>
         </a>
-      `,
+      `;
+      },
     )
     .join('');
 }
@@ -106,10 +109,12 @@ async function renderNews() {
   }
   target.innerHTML = news
     .map(
-      (item, idx) => `
+      (item, idx) => {
+        const thumb = getPrimaryImage(item);
+        return `
       <a class="detail-card-link" href="${getDetailLink('news', idx + 1)}">
-      <div class="card news-card detail-card${item.image ? ' with-thumb' : ''}">
-        ${item.image ? `<div class="thumb" style="background-image:url('${item.image}')"></div>` : ''}
+      <div class="card news-card detail-card${thumb ? ' with-thumb' : ''}">
+        ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
         <div>
           <div class="pill">${formatDate(item.date)}</div>
           <h3>${item.title || 'Untitled update'}</h3>
@@ -118,7 +123,8 @@ async function renderNews() {
         </div>
       </div>
       </a>
-    `,
+    `;
+      },
     )
     .join('');
 }
@@ -133,10 +139,12 @@ async function renderProjects() {
   }
   target.innerHTML = projects
     .map(
-      (project, idx) => `
+      (project, idx) => {
+        const thumb = getPrimaryImage(project);
+        return `
       <a class="detail-card-link" href="${getDetailLink('projects', idx + 1)}">
-      <div class="card detail-card${project.image ? ' with-thumb' : ''}">
-        ${project.image ? `<div class="thumb" style="background-image:url('${project.image}')"></div>` : ''}
+      <div class="card detail-card${thumb ? ' with-thumb' : ''}">
+        ${thumb ? `<div class="thumb" style="background-image:url('${thumb}')"></div>` : ''}
         <div>
           <h3>${project.title || 'Project title'}</h3>
           <p class="muted">${project.summary || ''}</p>
@@ -145,7 +153,8 @@ async function renderProjects() {
         </div>
       </div>
       </a>
-    `,
+    `;
+      },
     )
     .join('');
 }
@@ -249,6 +258,7 @@ async function renderDetailPage() {
   }
 
   target.innerHTML = renderDetailItem(type, item);
+  initDetailSliders(target);
 }
 
 function renderDetailItem(type, item) {
@@ -260,6 +270,7 @@ function renderDetailItem(type, item) {
           <a class="text-link" href="${backPage}">← Back to News</a>
           <h1>${item.title || 'Untitled update'}</h1>
           <div class="detail-meta">${formatDate(item.date)}</div>
+          ${renderDetailSlider(item, 'News image')}
           <p>${item.summary || 'No summary provided.'}</p>
           ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Source link</a></div>` : ''}
         </div>
@@ -269,8 +280,10 @@ function renderDetailItem(type, item) {
         <div class="panel detail-panel">
           <a class="text-link" href="${backPage}">← Back to Projects</a>
           <h1>${item.title || 'Untitled project'}</h1>
+          ${renderDetailSlider(item, 'Project image')}
           <p>${item.summary || 'No summary provided.'}</p>
           ${renderTags(item.tags)}
+          ${renderResourceLinksFromObject(item, ['publications', 'poster', 'presentation', 'slides', 'code', 'dataset'])}
           ${item.link ? `<div class="cta-row"><a class="text-link" href="${item.link}" target="_blank" rel="noopener">Project link</a></div>` : ''}
         </div>
       `;
@@ -288,12 +301,17 @@ function renderDetailItem(type, item) {
     case 'publications':
     case 'papers': {
       const venueYear = [item.venue, item.year].filter(Boolean).join(' · ');
+      const logo = item.image
+        ? `<div class="publication-logo-wrap"><img class="publication-logo" src="${escapeAttr(item.image)}" alt="Publication venue logo" loading="lazy" /></div>`
+        : '';
       return `
-        <div class="panel detail-panel">
+        <div class="panel detail-panel${logo ? ' has-publication-logo' : ''}">
           <a class="text-link" href="${backPage}">← Back to Publications</a>
+          ${logo}
           <h1>${item.title || 'Untitled publication'}</h1>
           <div class="detail-meta">${item.authors || ''}</div>
           <div class="detail-meta">${venueYear}</div>
+          ${renderResourceLinksFromObject(item.fields || {}, ['poster', 'presentation', 'slides', 'code', 'dataset'])}
           ${renderPublicationFields(item)}
           ${item.url ? `<div class="cta-row"><a class="text-link" href="${item.url}" target="_blank" rel="noopener">Publication link</a></div>` : ''}
         </div>
@@ -360,23 +378,107 @@ function renderPublicationFields(item) {
     })
     .join('');
 
-  const coreKeys = ['title', 'author', 'year', 'booktitle', 'journal', 'doi', 'url', 'abstract'];
-  const missingCore = coreKeys.filter((key) => !fields[key]);
-  const missingBlock = missingCore.length
-    ? `
-      <div class="bib-missing">
-        <div class="bib-missing-title">Not provided in this entry</div>
-        <div class="bib-missing-list">${missingCore.map((key) => `<span>${escapeHTML(prettyBibKey(key))}</span>`).join('')}</div>
-      </div>
-    `
-    : '';
-
   return `
     <div class="bib-fields">
       ${rows || '<div class="bib-empty">No BibTeX fields found.</div>'}
-      ${missingBlock}
     </div>
   `;
+}
+
+function getImageList(item) {
+  if (!item || typeof item !== 'object') return [];
+  if (Array.isArray(item.images)) {
+    return item.images.map((img) => String(img || '').trim()).filter(Boolean);
+  }
+  const single = String(item.image || '').trim();
+  return single ? [single] : [];
+}
+
+function getPrimaryImage(item) {
+  return getImageList(item)[0] || '';
+}
+
+function renderDetailSlider(item, altBase) {
+  const images = getImageList(item);
+  if (!images.length) return '';
+
+  const slides = images
+    .map(
+      (img, idx) => `
+      <img
+        class="detail-slider-image${idx === 0 ? ' is-active' : ''}"
+        data-slide-image
+        src="${escapeAttr(img)}"
+        alt="${escapeAttr(`${altBase} ${idx + 1}`)}"
+        loading="lazy"
+      />
+    `,
+    )
+    .join('');
+
+  if (images.length === 1) {
+    return `
+      <div class="detail-slider is-single">
+        <div class="detail-slider-viewport">${slides}</div>
+      </div>
+    `;
+  }
+
+  const dots = images
+    .map(
+      (_, idx) => `
+      <button
+        type="button"
+        class="detail-slider-dot${idx === 0 ? ' is-active' : ''}"
+        data-slide-dot
+        data-slide-index="${idx}"
+        aria-label="Go to image ${idx + 1}"
+      ></button>
+    `,
+    )
+    .join('');
+
+  return `
+    <div class="detail-slider" data-detail-slider>
+      <button type="button" class="detail-slider-nav prev" data-slide-prev aria-label="Previous image">‹</button>
+      <div class="detail-slider-viewport">${slides}</div>
+      <button type="button" class="detail-slider-nav next" data-slide-next aria-label="Next image">›</button>
+      <div class="detail-slider-counter" data-slide-counter>1 / ${images.length}</div>
+      <div class="detail-slider-dots">${dots}</div>
+    </div>
+  `;
+}
+
+function initDetailSliders(scope = document) {
+  const sliders = scope.querySelectorAll('[data-detail-slider]');
+  sliders.forEach((slider) => {
+    const images = Array.from(slider.querySelectorAll('[data-slide-image]'));
+    const prevBtn = slider.querySelector('[data-slide-prev]');
+    const nextBtn = slider.querySelector('[data-slide-next]');
+    const counter = slider.querySelector('[data-slide-counter]');
+    const dots = Array.from(slider.querySelectorAll('[data-slide-dot]'));
+    if (images.length < 2) return;
+
+    let current = 0;
+    const setCurrent = (next) => {
+      const max = images.length;
+      current = ((next % max) + max) % max;
+      images.forEach((img, idx) => img.classList.toggle('is-active', idx === current));
+      dots.forEach((dot, idx) => dot.classList.toggle('is-active', idx === current));
+      if (counter) counter.textContent = `${current + 1} / ${max}`;
+    };
+
+    prevBtn?.addEventListener('click', () => setCurrent(current - 1));
+    nextBtn?.addEventListener('click', () => setCurrent(current + 1));
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const idx = parseInt(dot.getAttribute('data-slide-index') || '0', 10);
+        if (!Number.isNaN(idx)) setCurrent(idx);
+      });
+    });
+
+    setCurrent(0);
+  });
 }
 
 function prettyBibKey(key) {
@@ -404,7 +506,7 @@ function formatBibValue(key, value) {
     }
   }
 
-  if (key === 'url' || key === 'image') {
+  if (['url', 'image', 'poster', 'presentation', 'slides', 'code', 'dataset', 'publications'].includes(key)) {
     const href = normalizeExternalUrl(raw);
     if (href) {
       return `<a class="text-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(raw)}</a>`;
@@ -420,6 +522,61 @@ function normalizeExternalUrl(value) {
   if (/^(https?:)?\/\//i.test(raw)) return raw.startsWith('//') ? `https:${raw}` : raw;
   if (/^www\./i.test(raw)) return `https://${raw}`;
   return raw;
+}
+
+function renderResourceLinksFromObject(source, keys = []) {
+  if (!source || typeof source !== 'object' || !keys.length) return '';
+
+  const rows = keys
+    .map((key) => {
+      const links = normalizeResourceEntries(source[key]);
+      if (!links.length) return '';
+      const linksHtml = links
+        .map((link) => {
+          const href = normalizeExternalUrl(link.href);
+          if (!href) return '';
+          return `<a class="text-link resource-link" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHTML(link.text)}</a>`;
+        })
+        .filter(Boolean)
+        .join('');
+      if (!linksHtml) return '';
+      return `
+        <div class="resource-row">
+          <span class="resource-label">${escapeHTML(prettyBibKey(key))}:</span>
+          <span class="resource-links">${linksHtml}</span>
+        </div>
+      `;
+    })
+    .filter(Boolean)
+    .join('');
+
+  if (!rows) return '';
+  return `<div class="detail-resources">${rows}</div>`;
+}
+
+function normalizeResourceEntries(value) {
+  if (value == null) return [];
+
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => normalizeResourceEntries(item))
+      .filter((entry) => entry && entry.href);
+  }
+
+  if (typeof value === 'object') {
+    const href = value.url || value.link || value.href || '';
+    const label = value.title || value.label || '';
+    if (!href) return [];
+    return [{ href: String(href).trim(), text: String(label || href).trim() }];
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return [];
+  const parts = raw.split(/\s*;\s*/).filter(Boolean);
+  return parts.map((part) => ({
+    href: part,
+    text: part.replace(/^https?:\/\//i, ''),
+  }));
 }
 
 async function loadBibPapers() {
