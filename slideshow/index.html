@@ -6,7 +6,7 @@
     <title>AiSec Lab Terminal Slideshow</title>
     <meta
       name="description"
-      content="Terminal-style slideshow for AiSec Lab marketing and quick recording workflows."
+      content="Terminal-style slideshow for AiSec Lab and quick recording workflows."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,61 +14,33 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260402-slidesregen1" />
+    <link rel="stylesheet" href="styles.css?v=20260402-slidesterminalonly1" />
   </head>
   <body>
     <div class="slideshow-shell">
-      <header class="slideshow-topbar">
-        <a class="slideshow-brand" href="../index.html">
-          <img src="../assets/images/logo/logo.svg" alt="AiSec Lab logo" />
-          <span>AiSec Lab</span>
-        </a>
-        <div class="slideshow-links">
-          <a href="../contact.html">Contact Page</a>
-          <a href="../contact-terminal.html">Terminal Contact</a>
-        </div>
-      </header>
-
       <main class="slideshow-main">
-        <section class="slideshow-stage">
-          <div class="slideshow-terminal">
-            <div class="slideshow-titlebar">
-              <div class="slideshow-controls" aria-hidden="true">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div class="slideshow-title">aiseclab-marketing-terminal</div>
+        <div class="slideshow-terminal">
+          <div class="slideshow-titlebar">
+            <div class="slideshow-controls" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+            <div class="slideshow-title" data-slideshow-title>Loading slides...</div>
+          </div>
 
-            <div class="slideshow-window">
-              <div class="slideshow-hud">
-                <span data-slideshow-counter>00 / 00</span>
-                <span data-slideshow-status>Loading</span>
-              </div>
-              <div class="slideshow-output" data-slideshow-output aria-live="polite"></div>
+          <div class="slideshow-window">
+            <div class="slideshow-hud">
+              <span data-slideshow-counter>00 / 00</span>
+              <span data-slideshow-status>Loading</span>
             </div>
+            <div class="slideshow-output" data-slideshow-output aria-live="polite"></div>
           </div>
-        </section>
-
-        <section class="slideshow-toolbar">
-          <div class="slideshow-toolbar-copy">
-            <div class="slideshow-kicker">Terminal Marketing Slideshow</div>
-            <h1 data-slideshow-title>Loading slides...</h1>
-            <p>Arrow keys move between slides. Press Space to pause or resume autoplay. Press R to restart.</p>
-          </div>
-
-          <div class="slideshow-actions">
-            <button type="button" data-action="prev">Previous</button>
-            <button type="button" data-action="toggle">Pause</button>
-            <button type="button" data-action="next">Next</button>
-            <button type="button" data-action="restart">Restart</button>
-          </div>
-        </section>
+        </div>
       </main>
     </div>
 
-    <script src="slides.js?v=20260402-slidesregen1"></script>
-    <script src="script.js?v=20260402-slidesregen1"></script>
+    <script src="slides.js?v=20260402-slidesterminalonly1"></script>
+    <script src="script.js?v=20260402-slidesterminalonly1"></script>
   </body>
 </html>

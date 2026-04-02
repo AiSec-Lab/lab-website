@@ -44,7 +44,6 @@
         command: './aiseclab --intro',
         duration: 8200,
         lines: [
-          { tone: 'highlight', text: 'AiSec Lab // terminal marketing walkthrough' },
           { text: 'This recording-friendly slideshow introduces the lab through the same terminal aesthetic used on the website.' },
           { text: intro },
         ],
