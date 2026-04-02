@@ -1367,10 +1367,19 @@ function handleDummyTerminalCommand(command, output) {
 }
 
 function printHelp(output) {
-  appendLine(output, 'Commands: man, ls, cd <dir>, cd .., view <item> [--link], cat <item> [--link], help, clear');
-  appendLine(output, 'Root dirs:');
-  rootDirs.forEach((dir) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(dir)}</span>`));
-  appendLine(output, 'Tip: use "view <item>" or "cat <item>" to print details, or add "--link" to open the link.');
+  const dir = currentPath[currentPath.length - 1];
+  if (dir === '/') {
+    appendLine(output, 'Commands: man, ls, cd <dir>, cd .., help, clear');
+    appendLine(output, 'Root dirs:');
+    rootDirs.forEach((entry) => appendStyledLine(output, `<span class="terminal-green">/${escapeHTML(entry)}</span>`));
+    appendLine(output, 'Tip: use "cd <dir>" to enter a section, then "ls" to list its items.');
+  } else {
+    appendLine(output, 'Commands: man, ls, cd .., view <index|name> [--link], cat <index|name> [--link], help, clear');
+    appendLine(output, `Current dir: /${dir}`);
+    appendLine(output, 'View usage: view <index|name> [--link]');
+    appendLine(output, 'Examples: view 1, view "LocalMind", view 2 --link');
+    appendLine(output, 'Tip: use "view <index|name>" or "cat <index|name>" to print details, or add "--link" to open the link.');
+  }
   appendLine(output, 'Manuals: use "man <command>" to view command documentation.');
   appendLine(output, 'History: use ↑ and ↓ to browse previous commands.');
   appendLine(output, 'Autocomplete: press Tab to complete commands, dirs, and item names.');

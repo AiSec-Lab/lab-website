@@ -1,12 +1,11 @@
 :root {
   --panel: rgba(8, 14, 20, 0.98);
-  --ink: #e9fff2;
-  --muted: rgba(204, 230, 216, 0.76);
-  --green: #80ffb8;
+  --ink: #dbe7ff;
+  --muted: rgba(219, 231, 255, 0.76);
+  --green: #8cff7a;
   --blue: #5caeff;
-  --cyan: #8cefff;
-  --amber: #ffd37e;
-  --red: #ff8e91;
+  --orange: #ffb86c;
+  --red: #ff6b6b;
 }
 
 * {
@@ -136,9 +135,9 @@ body {
 .slideshow-line {
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.55;
-  color: #d8fbe7;
-  text-shadow: 0 0 12px rgba(128, 255, 184, 0.08);
+  line-height: 1.35;
+  color: var(--ink);
+  text-shadow: 0 0 6px rgba(92, 148, 255, 0.15);
 }
 
 .slideshow-line.command {
@@ -156,7 +155,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.1;
-  text-shadow: 0 0 7px rgba(128, 255, 184, 0.28);
+  text-shadow: 0 0 7px rgba(140, 255, 122, 0.28);
 }
 
 .slideshow-terminal-green {
@@ -168,11 +167,11 @@ body {
 }
 
 .slideshow-line.highlight {
-  color: var(--amber);
+  color: var(--orange);
 }
 
 .slideshow-line.accent {
-  color: var(--cyan);
+  color: var(--orange);
 }
 
 .slideshow-line.contact {
@@ -183,11 +182,13 @@ body {
   margin-top: 22px;
   padding-top: 14px;
   border-top: 1px solid rgba(128, 255, 184, 0.16);
-  color: var(--amber);
+  color: var(--blue);
   font-size: 20px;
   letter-spacing: 0.02em;
   text-align: center;
-  text-shadow: 0 0 12px rgba(255, 211, 126, 0.12);
+  text-decoration: underline;
+  text-decoration-color: rgba(92, 174, 255, 0.85);
+  text-shadow: 0 0 6px rgba(92, 148, 255, 0.15);
 }
 
 @media (max-width: 900px) {
